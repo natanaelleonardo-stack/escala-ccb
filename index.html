@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0d3a6e">
+<title>Escala de Porteiros — Bairro dos Castanhos</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Escala Porteiros">
+
+<!-- Fontes e ícones -->
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ═══════════ TOAST ═══════════ -->
+<div id="toast"></div>
+
+<!-- ═══════════ POPUP DE ALTERAÇÃO NA ESCALA ═══════════ -->
+<div class="alert-overlay" id="alteracao-overlay">
+  <div class="alert-modal">
+    <div class="alert-top">
+      <div class="alert-icon"><i class="ti ti-refresh-alert"></i></div>
+      <div class="alert-greeting">A paz de Deus</div>
+      <div class="alert-title">A escala sofreu alterações</div>
+    </div>
+    <div class="alert-body">
+      <div class="alert-msg">Revise seus dias na escala. Os seguintes irmãos(ãs) tiveram mudanças:</div>
+      <div class="changed-list" id="changed-list"></div>
+      <div class="alert-blessing">Deus abençoe.</div>
+      <button class="alert-btn" onclick="fecharAlertaAlteracao()">Ok, entendi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL DE LOGIN ADMIN ═══════════ -->
+<div class="modal-bg" id="login-modal">
+  <div class="modal">
+    <div class="modal-title">Acesso Admin</div>
+    <div class="modal-sub">Informe a senha para gerenciar a escala.</div>
+    <div class="field-group">
+      <input type="password" id="login-pw" class="field-input" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary btn-block" onclick="doLogin()">Entrar</button>
+    <button class="btn btn-secondary btn-block" style="margin-top:8px" onclick="closeLoginModal()">Cancelar</button>
+    <div class="error-msg" id="login-error">Senha incorreta. Tente novamente.</div>
+  </div>
+</div>
+
+<!-- ═══════════ BOTÃO FLUTUANTE LOGIN/ADMIN ═══════════ -->
+<button class="login-trigger" id="login-trigger" onclick="onClickLoginTrigger()">
+  <i class="ti ti-shield-lock"></i>
+</button>
+
+<!-- ═══════════ CONTAINER PRINCIPAL ═══════════ -->
+<main id="app-root"></main>
+
+<!-- ═══════════ NAVEGAÇÃO INFERIOR ═══════════ -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="nav-item" data-tab="home" onclick="irPara('home')">
+    <i class="ti ti-home"></i><span>Início</span>
+  </button>
+  <button class="nav-item" data-tab="escala" onclick="irPara('escala')">
+    <i class="ti ti-list"></i><span>Escala</span>
+  </button>
+  <button class="nav-item" data-tab="calendario" onclick="irPara('calendario')">
+    <i class="ti ti-calendar"></i><span>Calendário</span>
+  </button>
+  <button class="nav-item" data-tab="minha-escala" onclick="irPara('minha-escala')">
+    <i class="ti ti-user"></i><span>Minha escala</span>
+  </button>
+  <button class="nav-item hidden" id="nav-admin" data-tab="admin" onclick="irPara('admin')">
+    <i class="ti ti-settings"></i><span>Admin</span>
+  </button>
+</nav>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/store.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/screens/home.js"></script>
+<script src="js/screens/detalheCulto.js"></script>
+<script src="js/screens/escalaAdmin.js"></script>
+<script src="js/screens/minhaEscala.js"></script>
+<script src="js/screens/calendario.js"></script>
+<script src="js/screens/adminPorteiros.js"></script>
+<script src="js/screens/adminPosicoes.js"></script>
+<script src="js/router.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
