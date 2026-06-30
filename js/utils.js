@@ -120,3 +120,11 @@ function linkWhatsApp(telefone) {
   const mensagem = encodeURIComponent('A paz de Deus! Tudo bem?');
   return `https://wa.me/${numeroComDDI}?text=${mensagem}`;
 }
+
+// Formata telefone para (xx) xxxxx-xxxx ou (xx) xxxx-xxxx
+function formatarTelefone(telefone) {
+  const d = (telefone || '').replace(/\D/g, '').slice(-11); // ignora DDI se houver
+  if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+  return telefone || '';
+}
