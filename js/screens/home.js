@@ -84,10 +84,12 @@ function renderCultoCard(dataISO) {
           <div class="porteiro-escalado-item">
             <span class="nome-chip">${p.nome}</span>
             ${temTelefone ? `
-              <span class="telefone-texto">${formatarTelefone(p.telefone)}</span>
-              <a class="whats-link-icon" href="${linkWhatsApp(p.telefone)}" target="_blank" onclick="event.stopPropagation()">
-                <i class="ti ti-brand-whatsapp"></i>
-              </a>` : ''}
+              <div class="contato-wrap">
+                <span class="telefone-texto">${formatarTelefone(p.telefone)}</span>
+                <a class="whats-link-icon" href="${linkWhatsApp(p.telefone)}" target="_blank" onclick="event.stopPropagation()">
+                  <i class="ti ti-brand-whatsapp"></i>
+                </a>
+              </div>` : ''}
           </div>`;
       }).join('');
     }
