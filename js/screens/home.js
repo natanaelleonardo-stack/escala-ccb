@@ -80,12 +80,15 @@ function renderCultoCard(dataISO) {
         const p = Store.getPorteiro(pid);
         if (!p) return '';
         const temTelefone = p.telefone && p.telefone.trim();
-        const whatsHTML = temTelefone ? `
-          <a class="whats-link" href="${linkWhatsApp(p.telefone)}" target="_blank" onclick="event.stopPropagation()">
-            <span class="whats-telefone">${p.telefone}</span>
-            <i class="ti ti-brand-whatsapp whats-icon"></i>
-          </a>` : '';
-        return `<span class="nome-chip">${p.nome}${whatsHTML}</span>`;
+        return `
+          <div class="porteiro-escalado-item">
+            <span class="nome-chip">${p.nome}</span>
+            ${temTelefone ? `
+              <span class="telefone-texto">${formatarTelefone(p.telefone)}</span>
+              <a class="whats-link-icon" href="${linkWhatsApp(p.telefone)}" target="_blank" onclick="event.stopPropagation()">
+                <i class="ti ti-brand-whatsapp"></i>
+              </a>` : ''}
+          </div>`;
       }).join('');
     }
     return `
