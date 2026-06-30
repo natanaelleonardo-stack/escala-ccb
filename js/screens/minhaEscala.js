@@ -105,7 +105,7 @@ function renderCorpoIdentificado(porteiro) {
 
 function renderResultadoMinhaEscala(porteiro) {
   const hoje = todayISO();
-  const fimJanela = isoDate(addDays(new Date(), 60));
+  const fimJanela = isoDate(addDays(new Date(), 6 * 30));
 
   const cultosDoporteiro = Object.values(Store.cultos)
     .filter(c => c.data >= hoje && c.data <= fimJanela)
@@ -123,7 +123,7 @@ function renderResultadoMinhaEscala(porteiro) {
 
   let listaHTML = '';
   if (cultosDoporteiro.length === 0) {
-    listaHTML = `<div class="estado-vazio"><i class="ti ti-calendar-off"></i><p>Nenhum dia agendado nos próximos 60 dias.</p></div>`;
+    listaHTML = `<div class="estado-vazio"><i class="ti ti-calendar-off"></i><p>Nenhum dia agendado nos próximos 6 meses.</p></div>`;
   } else {
     const porMes = {};
     cultosDoporteiro.forEach(c => {

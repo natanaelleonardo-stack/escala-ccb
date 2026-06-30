@@ -55,7 +55,7 @@ function renderListaEscala() {
     </header>`;
 
   const hoje = new Date();
-  const datas = gerarDatasCultoFixo(isoDate(hoje), isoDate(addDays(hoje, 41)))
+  const datas = gerarDatasCultoFixo(isoDate(hoje), isoDate(addDays(hoje, 6 * 30)))
     .filter(d => d >= todayISO());
 
   const eventos = Object.values(Store.cultos)
@@ -74,7 +74,7 @@ function renderListaEscala() {
   root.innerHTML = `
     ${header}
     <div class="section">
-      <div class="section-title">Próximas 6 semanas</div>
+      <div class="section-title">Próximos 6 meses</div>
       ${listaHTML}
     </div>
     <div style="height:12px"></div>

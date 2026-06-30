@@ -195,27 +195,27 @@ main {
   font-size: 10.5px; color: var(--cinza-texto-fraco);
   min-width: 92px; flex-shrink: 0;
 }
-.posicao-nomes { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
+.posicao-nomes { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
 .nome-chip {
   background: #fff; border: 0.5px solid #c8d4e0; color: var(--azul);
   font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 10px;
-  display: inline-flex; align-items: center; gap: 5px;
 }
 .nome-chip.vazio {
   background: var(--vermelho-bg); border-color: var(--vermelho-borda);
   color: var(--vermelho); font-style: italic; font-weight: 400;
 }
-.whats-link {
-  display: inline-flex; align-items: center; gap: 3px; text-decoration: none;
-  padding-left: 5px; border-left: 0.5px solid #d0d8e4; margin-left: 1px;
+.porteiro-escalado-item {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #fafbfc; border: 0.5px solid #e2e8f0; border-radius: 14px;
+  padding: 3px 6px 3px 3px;
 }
-.whats-telefone { font-size: 10px; color: #6a7a8a; font-weight: 400; }
-.whats-icon { font-size: 13px; color: #25D366; }
-.whats-link-row {
-  width: 30px; height: 30px; border-radius: 50%; background: #e8f9ee;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-decoration: none;
+.porteiro-escalado-item .nome-chip { border: none; background: none; padding: 0 0 0 4px; }
+.telefone-texto { font-size: 10.5px; color: #7a8a9a; font-weight: 400; white-space: nowrap; }
+.whats-link-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%; background: #e8f9ee; flex-shrink: 0;
 }
-.whats-link-row i { color: #25D366; font-size: 16px; }
+.whats-link-icon i { color: #25D366; font-size: 18px; }
 
 /* ── EVENTO ESPECIAL ── */
 .evento-card {

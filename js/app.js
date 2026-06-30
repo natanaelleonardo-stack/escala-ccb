@@ -123,7 +123,7 @@ function finalizarInicializacao() {
   verificarAlteracoesPendentes();
 
   // gera automaticamente o rodízio das próximas semanas (silencioso)
-  Store.garantirRodizioProximasSemanas(6).catch(err => console.error('Erro ao gerar rodízio:', err));
+  Store.garantirRodizioProximosMeses(6).catch(err => console.error('Erro ao gerar rodízio:', err));
 
   // re-render reativo: sempre que os dados mudarem, re-renderiza a tela atual
   Store.on('*', () => {
