@@ -104,6 +104,7 @@ function fecharAlertaAlteracao() {
 
 async function iniciarApp() {
   await Store.init();
+  if (typeof Notificacoes !== 'undefined') Notificacoes.init();
 
   // aguarda o primeiro carregamento dos dados antes de renderizar
   let tentativas = 0;
@@ -133,11 +134,14 @@ function finalizarInicializacao() {
 
 document.addEventListener('DOMContentLoaded', iniciarApp);
 
-// ── REGISTRO DO SERVICE WORKER (PWA) ──
+// ── REGISTRO DOS SERVICE WORKERS (PWA + Notificações) ──
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('service-worker.js').catch(err => {
       console.warn('Service worker não registrado:', err);
+    });
+    navigator.serviceWorker.register('firebase-messaging-sw.js').catch(err => {
+      console.warn('Service worker de notificações não registrado:', err);
     });
   });
 }

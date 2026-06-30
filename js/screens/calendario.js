@@ -27,7 +27,10 @@ function renderCalendario() {
     <div class="month-nav">
       <button onclick="mudarMesCalendario(-1)"><i class="ti ti-chevron-left"></i></button>
       <span class="month-label">${MESES[mes]} ${ano}</span>
-      <button onclick="mudarMesCalendario(1)"><i class="ti ti-chevron-right"></i></button>
+      <div style="display:flex;align-items:center;gap:4px">
+        ${_calMesOffset !== 0 ? `<button class="btn-hoje-cal" onclick="irParaMesAtual()">Hoje</button>` : ''}
+        <button onclick="mudarMesCalendario(1)"><i class="ti ti-chevron-right"></i></button>
+      </div>
     </div>`;
 
   // monta a grade do mês (com dias do mês anterior/seguinte pra completar semanas)
@@ -138,6 +141,12 @@ function renderCalendario() {
 
 function mudarMesCalendario(delta) {
   _calMesOffset += delta;
+  _calDiaSelecionado = null;
+  renderCalendario();
+}
+
+function irParaMesAtual() {
+  _calMesOffset = 0;
   _calDiaSelecionado = null;
   renderCalendario();
 }

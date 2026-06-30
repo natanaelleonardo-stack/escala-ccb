@@ -153,6 +153,62 @@ Sempre que o admin faz qualquer alteração na escala, todos que abrirem o
 app verão um popup ("A paz de Deus...") listando quem entrou, saiu ou
 trocou de posição, até confirmarem que viram ("Ok, entendi").
 
+## 📲 Notificações push (avisar o porteiro no dia do culto)
+
+Quando o porteiro se identifica na tela "Minha Escala" (escolhendo o
+nome dele), o app pede permissão de notificação. Se ele aceitar, o
+celular fica registrado para receber avisos.
+
+**Mas falta um passo de configuração manual no Firebase para isso funcionar de ponta a ponta:**
+
+### 1. Gerar a chave VAPID
+
+1. No Console Firebase → **Configurações do projeto** (ícone de engrenagem) → **Cloud Messaging**
+2. Na seção **"Web Push certificates"**, clique em **"Gerar par de chaves"**
+3. Copie a chave gerada
+4. Cole em `js/notificacoes.js`, na linha:
+   ```js
+   const VAPID_KEY = 'SUA_VAPID_KEY_AQUI';
+   ```
+
+### 2. Ativar o plano Blaze (pay-as-you-go)
+
+O envio automático diário de notificações precisa de uma **Cloud Function
+agendada**, que só roda no plano Blaze. Para o volume de uma congregação
+local (poucos porteiros, 1 disparo por dia), o custo real fica em **R$ 0,00**
+— o plano gratuito (Spark) não permite agendamento, só o Blaze libera isso,
+mesmo que você não pague nada na prática.
+
+1. No Console Firebase → **Upgrade do plano** → escolha **Blaze**
+2. Vincule um cartão (é só para casos de uso muito acima do normal)
+
+### 3. Fazer o deploy da Cloud Function
+
+O código já está pronto, comentado no final do arquivo `js/notificacoes.js`.
+Para ativá-lo:
+
+```bash
+npm install -g firebase-tools
+firebase login
+firebase init functions
+# escolha o projeto escala-ccb, linguagem JavaScript
+```
+
+Depois, copie o código comentado de `js/notificacoes.js` para
+`functions/index.js` (removendo os comentários `/*` `*/`), e rode:
+
+```bash
+firebase deploy --only functions
+```
+
+Isso cria uma função que roda **todos os dias às 7h** (horário de Brasília),
+verifica quem está escalado para o culto do dia, e envia a notificação push
+para o celular de cada um.
+
+> Se preferir não mexer com Cloud Functions agora, o app funciona
+> normalmente sem isso — só não envia o aviso automático. Pode ativar
+> esse recurso depois, quando quiser.
+
 ## 🎨 Trocar o ícone do app
 
 Quando tiver o ícone próprio desenhado, basta:

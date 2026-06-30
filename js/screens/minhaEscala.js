@@ -1,6 +1,8 @@
 // ════════════════════════════════════════════════════════════
-// TELA: MINHA ESCALA — busca por nome (sem login)
+// TELA: MINHA ESCALA — busca por nome + identificação por celular
 // ════════════════════════════════════════════════════════════
+
+const LS_KEY_MEU_PORTEIRO_ID = 'escala_meuPorteiroId';
 
 let _minhaEscalaSelecionado = null;
 
@@ -16,77 +18,95 @@ function renderMinhaEscala() {
       </div>
     </header>`;
 
-  const buscaHTML = `
-    <div class="busca-wrap">
-      <div class="busca-box">
-        <i class="ti ti-search"></i>
-        <input type="text" class="busca-input" id="minha-escala-input"
-          placeholder="Digite seu nome..."
-          oninput="onBuscaMinhaEscalaInput(this.value)"
-          autocomplete="off">
-        <div class="busca-suggestions" id="busca-suggestions"></div>
-      </div>
-    </div>`;
+  root.innerHTML = `${header}<div id="minha-escala-body"></div>`;
 
-  root.innerHTML = `${header}${buscaHTML}<div id="minha-escala-resultado"></div>`;
+  const meuId = localStorage.getItem(LS_KEY_MEU_PORTEIRO_ID);
+  const meuPorteiro = meuId ? Store.getPorteiro(meuId) : null;
 
-  if (_minhaEscalaSelecionado) {
-    document.getElementById('minha-escala-input').value = _minhaEscalaSelecionado.nome;
-    renderResultadoMinhaEscala(_minhaEscalaSelecionado);
+  if (meuPorteiro) {
+    _minhaEscalaSelecionado = meuPorteiro;
+    renderCorpoIdentificado(meuPorteiro);
   } else {
-    renderEstadoVazioMinhaEscala();
+    renderPopupQuemEVoce();
   }
 }
 
-function renderEstadoVazioMinhaEscala() {
-  document.getElementById('minha-escala-resultado').innerHTML = `
-    <div class="estado-vazio">
-      <i class="ti ti-calendar-search"></i>
-      <p>Digite seu nome acima para ver<br>os seus dias na escala.</p>
+// ── POPUP "QUEM É VOCÊ?" (primeiro acesso a esta tela) ──
+function renderPopupQuemEVoce() {
+  const body = document.getElementById('minha-escala-body');
+
+  const listaHTML = Store.porteiros
+    .filter(p => p.ativo !== false)
+    .sort((a, b) => a.nome.localeCompare(b.nome))
+    .map(p => `
+      <div class="quem-item" onclick='confirmarIdentidade("${p.id}")'>
+        <div class="porteiro-avatar" style="background:${p.cor || '#ddd'};color:#fff">${initials(p.nome)}</div>
+        <div class="quem-item-info">
+          <div class="quem-item-name">${p.nome}</div>
+          ${p.codinome ? `<div class="quem-item-codinome">${p.codinome}</div>` : ''}
+        </div>
+      </div>`).join('');
+
+  body.innerHTML = `
+    <div class="quem-voce-wrap">
+      <div class="quem-voce-title"><i class="ti ti-hand-stop"></i> Quem é você?</div>
+      <div class="quem-voce-sub">Selecione seu nome na lista para ver seus dias de serviço. Você só precisa fazer isso uma vez neste celular.</div>
+      <div class="busca-box" style="margin-bottom:12px">
+        <i class="ti ti-search"></i>
+        <input type="text" class="busca-input" placeholder="Buscar pelo nome..." oninput="filtrarListaQuemEVoce(this.value)" autocomplete="off">
+      </div>
+      <div class="quem-lista" id="quem-lista">${listaHTML}</div>
+      ${Store.porteiros.length === 0 ? `<div class="estado-vazio"><i class="ti ti-users"></i><p>Nenhum porteiro cadastrado ainda.</p></div>` : ''}
     </div>`;
 }
 
-function onBuscaMinhaEscalaInput(valor) {
-  const sugestoesEl = document.getElementById('busca-suggestions');
-  if (!valor.trim()) {
-    sugestoesEl.classList.remove('open');
-    _minhaEscalaSelecionado = null;
-    renderEstadoVazioMinhaEscala();
-    return;
-  }
-
-  const termo = valor.trim().toLowerCase();
-  const encontrados = Store.porteiros.filter(p =>
-    p.ativo !== false &&
-    (p.nome.toLowerCase().includes(termo) || (p.codinome || '').toLowerCase().includes(termo))
-  ).slice(0, 6);
-
-  if (encontrados.length === 0) {
-    sugestoesEl.classList.remove('open');
-    return;
-  }
-
-  sugestoesEl.innerHTML = encontrados.map(p => `
-    <div class="busca-suggestion-item" onclick='selecionarPorteiroMinhaEscala(${JSON.stringify(p.id)})'>
-      ${p.nome}${p.codinome ? ` <span style="color:#999">(${p.codinome})</span>` : ''}
-    </div>`).join('');
-  sugestoesEl.classList.add('open');
+function filtrarListaQuemEVoce(termo) {
+  const t = termo.trim().toLowerCase();
+  document.querySelectorAll('#quem-lista .quem-item').forEach(el => {
+    const texto = el.textContent.toLowerCase();
+    el.style.display = texto.includes(t) ? 'flex' : 'none';
+  });
 }
 
-function selecionarPorteiroMinhaEscala(porteiroId) {
+function confirmarIdentidade(porteiroId) {
   const p = Store.getPorteiro(porteiroId);
   if (!p) return;
+  localStorage.setItem(LS_KEY_MEU_PORTEIRO_ID, porteiroId);
   _minhaEscalaSelecionado = p;
-  document.getElementById('busca-suggestions').classList.remove('open');
-  document.getElementById('minha-escala-input').value = p.nome;
-  renderResultadoMinhaEscala(p);
+  toast(`Olá, ${nomeExibicao(p)}! 👋`);
+  renderCorpoIdentificado(p);
+
+  // pede permissão de notificação push (silenciosamente, se suportado)
+  if (typeof Notificacoes !== 'undefined') {
+    Notificacoes.solicitarPermissaoEToken(porteiroId);
+  }
+}
+
+function trocarIdentidade() {
+  if (!confirm('Deseja trocar quem está usando o app neste celular?')) return;
+  localStorage.removeItem(LS_KEY_MEU_PORTEIRO_ID);
+  _minhaEscalaSelecionado = null;
+  renderPopupQuemEVoce();
+}
+
+// ── CORPO QUANDO JÁ IDENTIFICADO ──
+function renderCorpoIdentificado(porteiro) {
+  const body = document.getElementById('minha-escala-body');
+
+  const trocaLinkHTML = `
+    <div class="troca-identidade-bar">
+      Não é <strong>${nomeExibicao(porteiro)}</strong>?
+      <button onclick="trocarIdentidade()">Trocar</button>
+    </div>`;
+
+  body.innerHTML = `${trocaLinkHTML}<div id="minha-escala-resultado"></div>`;
+  renderResultadoMinhaEscala(porteiro);
 }
 
 function renderResultadoMinhaEscala(porteiro) {
   const hoje = todayISO();
   const fimJanela = isoDate(addDays(new Date(), 60));
 
-  // Encontra todos os cultos onde esse porteiro está escalado
   const cultosDoporteiro = Object.values(Store.cultos)
     .filter(c => c.data >= hoje && c.data <= fimJanela)
     .filter(c => Object.values(c.escalas || {}).some(lista => lista.includes(porteiro.id)))
@@ -105,7 +125,6 @@ function renderResultadoMinhaEscala(porteiro) {
   if (cultosDoporteiro.length === 0) {
     listaHTML = `<div class="estado-vazio"><i class="ti ti-calendar-off"></i><p>Nenhum dia agendado nos próximos 60 dias.</p></div>`;
   } else {
-    // agrupa por mês
     const porMes = {};
     cultosDoporteiro.forEach(c => {
       const d = parseISO(c.data);
@@ -119,7 +138,6 @@ function renderResultadoMinhaEscala(porteiro) {
         <div class="mes-header"><div class="mes-nome">${mes}</div></div>
         ${cultos.map(c => {
           const d = parseISO(c.data);
-          // encontra em qual posição ele está
           let posNome = '';
           for (const [posId, lista] of Object.entries(c.escalas || {})) {
             if (lista.includes(porteiro.id)) {
@@ -146,7 +164,7 @@ function renderResultadoMinhaEscala(porteiro) {
 
   document.getElementById('minha-escala-resultado').innerHTML = `
     <div class="resultado-header">
-      <div class="porteiro-avatar-lg">${initials(porteiro.nome)}</div>
+      <div class="porteiro-avatar-lg" style="background:${porteiro.cor || '#ddd'};color:#fff">${initials(porteiro.nome)}</div>
       <div>
         <div class="porteiro-nome-lg">${porteiro.nome}</div>
         <div class="porteiro-disp">${dispLabel}${posicaoLabel}</div>

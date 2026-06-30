@@ -14,6 +14,7 @@ const ARQUIVOS_CACHE = [
   './js/utils.js',
   './js/store.js',
   './js/auth.js',
+  './js/notificacoes.js',
   './js/router.js',
   './js/app.js',
   './js/screens/home.js',

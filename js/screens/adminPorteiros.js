@@ -125,6 +125,18 @@ function abrirFormPorteiro(porteiroId) {
           </div>
         </div>
       </div>
+      <hr class="divider">
+      <div class="field-group">
+        <label class="field-label">Cor de identificação</label>
+        <div class="cor-picker" id="cor-picker">
+          ${PALETA_CORES.map(cor => `
+            <div class="cor-swatch ${ (p?.cor || PALETA_CORES[0]) === cor ? 'selected' : ''}"
+                 style="background:${cor}" onclick="selecionarCorPorteiro('${cor}')" data-cor="${cor}"></div>
+          `).join('')}
+        </div>
+        <div class="field-hint">Usada para identificar o porteiro no Calendário.</div>
+      </div>
+      <input type="hidden" id="pf-cor" value="${p?.cor || PALETA_CORES[Store.porteiros.length % PALETA_CORES.length]}">
       <input type="hidden" id="pf-disponibilidade" value="${disponibilidade}">
       <button class="btn btn-primary btn-block" onclick="salvarPorteiro()">Salvar porteiro</button>
       <button class="btn btn-secondary btn-block" style="margin-top:8px" onclick="fecharFormPorteiro()">Cancelar</button>
@@ -142,6 +154,13 @@ function selecionarDisponibilidade(valor) {
   });
 }
 
+function selecionarCorPorteiro(cor) {
+  document.getElementById('pf-cor').value = cor;
+  document.querySelectorAll('#cor-picker .cor-swatch').forEach(el => {
+    el.classList.toggle('selected', el.dataset.cor === cor);
+  });
+}
+
 function fecharFormPorteiro() {
   const el = document.getElementById('porteiro-form-overlay');
   if (el) el.remove();
@@ -153,14 +172,15 @@ async function salvarPorteiro() {
   const codinome = document.getElementById('pf-codinome').value.trim();
   const telefone = document.getElementById('pf-telefone').value.trim();
   const disponibilidade = document.getElementById('pf-disponibilidade').value;
+  const cor = document.getElementById('pf-cor').value;
 
   if (!nome) { toast('Informe o nome completo'); return; }
 
   if (_editandoPorteiroId) {
-    await Store.updatePorteiro(_editandoPorteiroId, { nome, codinome, telefone, disponibilidade });
+    await Store.updatePorteiro(_editandoPorteiroId, { nome, codinome, telefone, disponibilidade, cor });
     toast('Porteiro atualizado ✓');
   } else {
-    await Store.addPorteiro({ nome, codinome, telefone, disponibilidade });
+    await Store.addPorteiro({ nome, codinome, telefone, disponibilidade, cor });
     toast('Porteiro cadastrado ✓');
   }
   fecharFormPorteiro();

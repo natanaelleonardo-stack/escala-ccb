@@ -32,10 +32,16 @@ function renderDetalheCulto(dataISO) {
         corpo = ids.map(pid => {
           const p = Store.getPorteiro(pid);
           if (!p) return '';
+          const temTelefone = p.telefone && p.telefone.trim();
+          const whatsHTML = temTelefone ? `
+            <a class="whats-link-row" href="${linkWhatsApp(p.telefone)}" target="_blank">
+              <i class="ti ti-brand-whatsapp"></i>
+            </a>` : '';
           return `
             <div class="porteiro-row">
-              <div class="porteiro-avatar">${initials(p.nome)}</div>
+              <div class="porteiro-avatar" style="background:${p.cor || '#ddd'};color:#fff">${initials(p.nome)}</div>
               <span class="porteiro-name">${p.nome}${p.codinome ? ` (${p.codinome})` : ''}</span>
+              ${whatsHTML}
             </div>`;
         }).join('');
       }

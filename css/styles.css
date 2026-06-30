@@ -199,11 +199,23 @@ main {
 .nome-chip {
   background: #fff; border: 0.5px solid #c8d4e0; color: var(--azul);
   font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 10px;
+  display: inline-flex; align-items: center; gap: 5px;
 }
 .nome-chip.vazio {
   background: var(--vermelho-bg); border-color: var(--vermelho-borda);
   color: var(--vermelho); font-style: italic; font-weight: 400;
 }
+.whats-link {
+  display: inline-flex; align-items: center; gap: 3px; text-decoration: none;
+  padding-left: 5px; border-left: 0.5px solid #d0d8e4; margin-left: 1px;
+}
+.whats-telefone { font-size: 10px; color: #6a7a8a; font-weight: 400; }
+.whats-icon { font-size: 13px; color: #25D366; }
+.whats-link-row {
+  width: 30px; height: 30px; border-radius: 50%; background: #e8f9ee;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-decoration: none;
+}
+.whats-link-row i { color: #25D366; font-size: 16px; }
 
 /* ── EVENTO ESPECIAL ── */
 .evento-card {
@@ -304,6 +316,18 @@ main {
 .radio-fake.on::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #fff; }
 .disp-opt-title { font-size: 13px; font-weight: 500; color: #333; }
 .disp-opt-sub { font-size: 11px; color: #777; margin-top: 2px; }
+
+/* ── SELETOR DE COR (cadastro de porteiro) ── */
+.cor-picker { display: flex; flex-wrap: wrap; gap: 8px; }
+.cor-swatch {
+  width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+  border: 2px solid transparent; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
+  transition: transform .1s;
+}
+.cor-swatch.selected {
+  border-color: #fff; box-shadow: 0 0 0 2px var(--azul), inset 0 0 0 1px rgba(0,0,0,.08);
+  transform: scale(1.08);
+}
 
 /* ── LISTAS ADMIN (porteiros / posições) ── */
 .lista-cards { display: flex; flex-direction: column; gap: 8px; }
@@ -477,6 +501,33 @@ main {
 .estado-vazio i { font-size: 34px; color: #bbb; display: block; margin-bottom: 10px; }
 .estado-vazio p { font-size: 13px; color: #999; line-height: 1.5; }
 
+/* ── "QUEM É VOCÊ?" (identificação no celular) ── */
+.quem-voce-wrap { padding: 16px 14px; }
+.quem-voce-title {
+  font-size: 16px; font-weight: 700; color: var(--azul);
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+}
+.quem-voce-sub { font-size: 12.5px; color: #777; line-height: 1.5; margin-bottom: 16px; }
+.quem-lista { display: flex; flex-direction: column; gap: 6px; max-height: 50vh; overflow-y: auto; }
+.quem-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 10px;
+  background: #fff; border: 0.5px solid var(--cinza-borda); border-radius: var(--raio-sm); cursor: pointer;
+}
+.quem-item:active { background: var(--azul-bg); }
+.quem-item-info { flex: 1; min-width: 0; }
+.quem-item-name { font-size: 13.5px; font-weight: 500; color: #333; }
+.quem-item-codinome { font-size: 11px; color: #999; }
+
+.troca-identidade-bar {
+  background: var(--azul-bg); border-bottom: 0.5px solid #d8e4f2;
+  padding: 8px 14px; font-size: 12px; color: #555; text-align: center;
+}
+.troca-identidade-bar strong { color: var(--azul); }
+.troca-identidade-bar button {
+  background: none; border: none; color: var(--azul); font-weight: 600;
+  font-size: 12px; text-decoration: underline; padding: 0 0 0 4px;
+}
+
 /* ── CALENDÁRIO ── */
 .month-nav {
   background: var(--cinza-card); padding: 10px 14px;
@@ -485,6 +536,10 @@ main {
 .month-nav button { background: none; border: none; padding: 4px 8px; }
 .month-nav i { color: var(--azul); font-size: 17px; }
 .month-nav .month-label { font-size: 13px; font-weight: 600; color: #333; }
+.btn-hoje-cal {
+  background: var(--azul-bg-2); color: var(--azul); border: 0.5px solid #c8d8ec;
+  font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 14px;
+}
 
 .cal-wrap { background: #fff; padding: 8px 6px 4px; }
 .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 4px; }

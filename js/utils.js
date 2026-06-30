@@ -111,3 +111,12 @@ function porteiroDisponivelEm(porteiro, diaSemana) {
   if (porteiro.disponibilidade === 'sexta') return diaSemana === 5;
   return true;
 }
+
+// Monta o link do WhatsApp com a mensagem padrão já preenchida
+function linkWhatsApp(telefone) {
+  const apenasNumeros = (telefone || '').replace(/\D/g, '');
+  // assume Brasil (+55) se o número não tiver código de país
+  const numeroComDDI = apenasNumeros.length <= 11 ? `55${apenasNumeros}` : apenasNumeros;
+  const mensagem = encodeURIComponent('A paz de Deus! Tudo bem?');
+  return `https://wa.me/${numeroComDDI}?text=${mensagem}`;
+}

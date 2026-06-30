@@ -15,9 +15,8 @@ function renderHome() {
     </header>`;
 
   const hoje = new Date();
-  const datasProximas = gerarDatasCultoFixo(isoDate(hoje), isoDate(addDays(hoje, 13)))
-    .filter(d => d >= todayISO())
-    .slice(0, 4);
+  const proximaData = gerarDatasCultoFixo(isoDate(hoje), isoDate(addDays(hoje, 13)))
+    .filter(d => d >= todayISO())[0];
 
   const eventosProximos = Object.values(Store.cultos)
     .filter(c => c.tipo === 'evento' && c.data >= todayISO())
@@ -25,12 +24,10 @@ function renderHome() {
     .slice(0, 5);
 
   let cultosHTML = '';
-  if (datasProximas.length === 0) {
+  if (!proximaData) {
     cultosHTML = `<div class="estado-vazio"><i class="ti ti-calendar-search"></i><p>Nenhum culto configurado ainda.</p></div>`;
   } else {
-    datasProximas.forEach(dataISO => {
-      cultosHTML += renderCultoCard(dataISO);
-    });
+    cultosHTML = renderCultoCard(proximaData);
   }
 
   let eventosHTML = '';
@@ -58,7 +55,7 @@ function renderHome() {
   root.innerHTML = `
     ${header}
     <div class="section">
-      <div class="section-title">Próximos cultos</div>
+      <div class="section-title">Próximo culto</div>
       ${cultosHTML}
     </div>
     ${eventosHTML}
@@ -81,7 +78,14 @@ function renderCultoCard(dataISO) {
     } else {
       nomesHTML = idsEscalados.map(pid => {
         const p = Store.getPorteiro(pid);
-        return p ? `<span class="nome-chip">${p.nome}</span>` : '';
+        if (!p) return '';
+        const temTelefone = p.telefone && p.telefone.trim();
+        const whatsHTML = temTelefone ? `
+          <a class="whats-link" href="${linkWhatsApp(p.telefone)}" target="_blank" onclick="event.stopPropagation()">
+            <span class="whats-telefone">${p.telefone}</span>
+            <i class="ti ti-brand-whatsapp whats-icon"></i>
+          </a>` : '';
+        return `<span class="nome-chip">${p.nome}${whatsHTML}</span>`;
       }).join('');
     }
     return `

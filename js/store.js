@@ -67,8 +67,8 @@ const Store = {
   // PORTEIROS
   // ════════════════════════════════════════════════════════
 
-  async addPorteiro({ nome, codinome, disponibilidade, telefone }) {
-    const cor = corParaPorteiro(this.porteiros.length);
+  async addPorteiro({ nome, codinome, disponibilidade, telefone, cor }) {
+    const corFinal = cor || corParaPorteiro(this.porteiros.length);
     const maiorPosicao = this.porteiros.reduce((max, p) => Math.max(max, p.posicaoFila || 0), 0);
     const doc = {
       nome: nome.trim(),
@@ -76,7 +76,7 @@ const Store = {
       disponibilidade: disponibilidade || 'todos', // 'todos' | 'terca' | 'sexta'
       telefone: (telefone || '').trim(),
       posicaoFila: maiorPosicao + 1,
-      cor,
+      cor: corFinal,
       ativo: true,
       criadoEm: firebase.firestore.FieldValue.serverTimestamp()
     };
