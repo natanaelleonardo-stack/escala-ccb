@@ -214,8 +214,42 @@ main {
 .whats-link-icon {
   display: flex; align-items: center; justify-content: center;
   width: 22px; height: 22px; border-radius: 50%; background: #e8f9ee; flex-shrink: 0;
+  text-decoration: none;
 }
 .whats-link-icon i { color: #25D366; font-size: 16px; }
+
+/* ── LISTA TELEFÔNICA ── */
+.lista-tel-wrap { padding: 0 14px 4px; }
+.lista-filtros { margin-bottom: 10px; }
+.filtros-scroll {
+  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+.filtros-scroll::-webkit-scrollbar { display: none; }
+.filtro-btn {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 0.5px solid var(--cinza-borda); background: var(--cinza-card);
+  font-size: 11px; font-weight: 600; color: #555; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.filtro-btn.todos { width: auto; border-radius: 14px; padding: 0 14px; }
+.filtro-btn.ativo { background: var(--azul); color: #fff; border-color: var(--azul); }
+.tel-lista { display: flex; flex-direction: column; }
+.tel-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid #ebebeb; }
+.tel-item:last-child { border-bottom: none; }
+.tel-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.tel-info { flex: 1; min-width: 0; }
+.tel-nome { font-size: 13px; font-weight: 500; color: #333; }
+.tel-codinome { font-size: 11px; color: #999; font-weight: 400; }
+.tel-numero { font-size: 11px; color: #888; margin-top: 1px; }
+.tel-sem-numero { font-size: 11px; color: #bbb; font-style: italic; margin-top: 1px; }
+.tel-whats {
+  width: 28px; height: 28px; border-radius: 50%; background: #e8f9ee;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; text-decoration: none;
+}
+.tel-whats i { color: #25D366; font-size: 17px; }
 
 /* ── EVENTO ESPECIAL ── */
 .evento-card {

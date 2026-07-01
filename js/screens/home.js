@@ -59,8 +59,76 @@ function renderHome() {
       ${cultosHTML}
     </div>
     ${eventosHTML}
+    <div class="section" style="padding-bottom:0">
+      <div class="section-title">Lista telefônica</div>
+    </div>
+    ${renderListaTelefonica()}
     <div style="height:12px"></div>
   `;
+
+  // ativa os filtros após render
+  ativarFiltroLista('todos');
+}
+
+// ── LISTA TELEFÔNICA ──
+function renderListaTelefonica() {
+  const porteiros = Store.porteiros
+    .filter(p => p.ativo !== false)
+    .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+
+  // letras que existem de fato
+  const letras = [...new Set(porteiros.map(p => p.nome.trim()[0].toUpperCase()))].sort();
+
+  const filtrosHTML = `
+    <div class="lista-filtros">
+      <div class="filtros-scroll">
+        <button class="filtro-btn todos ativo" onclick="ativarFiltroLista('todos')">Todos</button>
+        ${letras.map(l => `
+          <button class="filtro-btn" data-letra="${l}" onclick="ativarFiltroLista('${l}')">${l}</button>
+        `).join('')}
+      </div>
+    </div>`;
+
+  const itensHTML = porteiros.map(p => {
+    const letra = p.nome.trim()[0].toUpperCase();
+    const temTel = p.telefone && p.telefone.trim();
+    const cor = p.cor || '#888';
+    return `
+      <div class="tel-item" data-letra="${letra}">
+        <div class="tel-avatar" style="background:${cor}">${letra}</div>
+        <div class="tel-info">
+          <div class="tel-nome">${p.nome}${p.codinome ? ` <span class="tel-codinome">(${p.codinome})</span>` : ''}</div>
+          ${temTel ? `<div class="tel-numero">${formatarTelefone(p.telefone)}</div>` : `<div class="tel-sem-numero">sem telefone</div>`}
+        </div>
+        ${temTel ? `
+          <a class="tel-whats" href="${linkWhatsApp(p.telefone)}" target="_blank">
+            <i class="ti ti-brand-whatsapp"></i>
+          </a>` : ''}
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="lista-tel-wrap">
+      ${filtrosHTML}
+      <div class="tel-lista" id="tel-lista">
+        ${porteiros.length === 0
+          ? `<div class="estado-vazio"><i class="ti ti-users"></i><p>Nenhum porteiro cadastrado ainda.</p></div>`
+          : itensHTML}
+      </div>
+    </div>`;
+}
+
+function ativarFiltroLista(valor) {
+  // atualiza botões
+  document.querySelectorAll('.filtro-btn').forEach(btn => {
+    btn.classList.toggle('ativo',
+      valor === 'todos' ? btn.classList.contains('todos') : btn.dataset.letra === valor
+    );
+  });
+  // filtra itens
+  document.querySelectorAll('#tel-lista .tel-item').forEach(el => {
+    el.style.display = (valor === 'todos' || el.dataset.letra === valor) ? 'flex' : 'none';
+  });
 }
 
 function renderCultoCard(dataISO) {
@@ -118,3 +186,4 @@ function renderCultoCard(dataISO) {
       </div>
     </div>`;
 }
+
