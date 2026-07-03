@@ -49,7 +49,7 @@ body {
   color: var(--cinza-texto);
   font-size: 15px;
   -webkit-tap-highlight-color: transparent;
-  padding-bottom: 64px; /* espaço pro bottom-nav fixo */
+  padding-bottom: 80px; /* espaço pro bottom-nav fixo */
 }
 
 button { font-family: inherit; cursor: pointer; }
@@ -635,7 +635,7 @@ main {
 .admin-header-btn.logged { color: #444; }
 
 /* ── ESPAÇO EXTRA NO FINAL DAS PÁGINAS (evita conteúdo atrás da bottom nav) ── */
-.page-bottom-spacer { height: 80px; }
+.page-bottom-spacer { height: 100px; }
 
 /* ── UTILITÁRIOS ── */
 .hidden { display: none !important; }
