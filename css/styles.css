@@ -351,7 +351,15 @@ main {
 .disp-opt-title { font-size: 13px; font-weight: 500; color: #333; }
 .disp-opt-sub { font-size: 11px; color: #777; margin-top: 2px; }
 
-/* ── SELETOR DE COR (cadastro de porteiro) ── */
+/* ── CHECKBOXES DE POSIÇÃO (cadastro de porteiro) ── */
+.pos-check-list { display: flex; flex-direction: column; gap: 8px; }
+.pos-check-item {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff; border: 0.5px solid var(--cinza-borda); border-radius: var(--raio-sm);
+  padding: 9px 12px; cursor: pointer; font-size: 13px; color: #333;
+}
+.pos-check-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--azul); flex-shrink: 0; }
+.pos-check-item:has(input:checked) { border-color: var(--azul); background: var(--azul-bg); }
 .cor-picker { display: flex; flex-wrap: wrap; gap: 8px; }
 .cor-swatch {
   width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
@@ -618,15 +626,16 @@ main {
 }
 #toast.show { transform: translateX(-50%) translateY(0); }
 
-/* ── LOGIN ── */
-.login-trigger {
-  position: fixed; bottom: 70px; right: 14px; z-index: 40;
-  width: 38px; height: 38px; border-radius: 50%; background: var(--azul);
-  display: flex; align-items: center; justify-content: center; border: none;
-  box-shadow: 0 2px 10px rgba(0,0,0,.25);
+/* ── BOTÃO ADMIN NO HEADER ── */
+.admin-header-btn {
+  background: none; border: none; padding: 4px 6px;
+  color: var(--azul); font-size: 20px; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
 }
-.login-trigger i { color: #fff; font-size: 16px; }
-.login-trigger.logged { background: #444; }
+.admin-header-btn.logged { color: #444; }
+
+/* ── ESPAÇO EXTRA NO FINAL DAS PÁGINAS (evita conteúdo atrás da bottom nav) ── */
+.page-bottom-spacer { height: 80px; }
 
 /* ── UTILITÁRIOS ── */
 .hidden { display: none !important; }

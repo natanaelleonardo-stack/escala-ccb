@@ -9,6 +9,8 @@ let _minhaEscalaSelecionado = null;
 function renderMinhaEscala() {
   const root = document.getElementById('app-root');
 
+  const adminBtn = `<button class="admin-header-btn ${Auth.isAdmin ? 'logged' : ''}" onclick="onClickLoginTrigger()"><i class="ti ti-${Auth.isAdmin ? 'shield-check' : 'shield-lock'}"></i></button>`;
+
   const header = `
     <header class="app-header">
       <img src="assets/brasao-ccb.png" class="app-header-logo" alt="CCB">
@@ -16,6 +18,7 @@ function renderMinhaEscala() {
         <div class="app-header-title">Minha Escala</div>
         <div class="app-header-sub">Consulte seus dias de serviço</div>
       </div>
+      ${adminBtn}
     </header>`;
 
   root.innerHTML = `${header}<div id="minha-escala-body"></div>`;
@@ -118,7 +121,14 @@ function renderResultadoMinhaEscala(porteiro) {
     sexta: 'Disponível: apenas sextas'
   }[porteiro.disponibilidade] || '';
 
-  const posicaoNaFila = Store.filaRodizio.indexOf(porteiro.id);
+  // posição na fila: pega a menor posição dentre as filas das posições onde atua
+  const posicoesPorteiro = porteiro.posicoes || [];
+  let posicaoNaFila = -1;
+  posicoesPorteiro.forEach(posId => {
+    const fila = Store.getFilaDaPosicao(posId);
+    const idx = fila.indexOf(porteiro.id);
+    if (idx !== -1 && (posicaoNaFila === -1 || idx < posicaoNaFila)) posicaoNaFila = idx;
+  });
   const posicaoLabel = posicaoNaFila >= 0 ? ` · Posição na fila: ${posicaoNaFila + 1}ª` : '';
 
   let listaHTML = '';

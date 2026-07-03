@@ -5,6 +5,11 @@
 function renderHome() {
   const root = document.getElementById('app-root');
 
+  const adminBtn = `
+    <button class="admin-header-btn ${Auth.isAdmin ? 'logged' : ''}" onclick="onClickLoginTrigger()" title="${Auth.isAdmin ? 'Painel admin' : 'Acesso admin'}">
+      <i class="ti ti-${Auth.isAdmin ? 'shield-check' : 'shield-lock'}"></i>
+    </button>`;
+
   const header = `
     <header class="app-header">
       <img src="assets/brasao-ccb.png" class="app-header-logo" alt="CCB">
@@ -12,6 +17,7 @@ function renderHome() {
         <div class="app-header-title">Escala de Porteiros</div>
         <div class="app-header-sub">${Store.config.localidade || 'Bairro dos Castanhos'}</div>
       </div>
+      ${adminBtn}
     </header>`;
 
   const hoje = new Date();
@@ -63,7 +69,7 @@ function renderHome() {
       <div class="section-title">Lista telefônica</div>
     </div>
     ${renderListaTelefonica()}
-    <div style="height:12px"></div>
+    <div class="page-bottom-spacer"></div>
   `;
 
   // ativa os filtros após render

@@ -8,6 +8,8 @@ let _calDiaSelecionado = null;
 function renderCalendario() {
   const root = document.getElementById('app-root');
 
+  const adminBtn = `<button class="admin-header-btn ${Auth.isAdmin ? 'logged' : ''}" onclick="onClickLoginTrigger()"><i class="ti ti-${Auth.isAdmin ? 'shield-check' : 'shield-lock'}"></i></button>`;
+
   const header = `
     <header class="app-header">
       <img src="assets/brasao-ccb.png" class="app-header-logo" alt="CCB">
@@ -15,6 +17,7 @@ function renderCalendario() {
         <div class="app-header-title">Calendário</div>
         <div class="app-header-sub">Visão geral da escala</div>
       </div>
+      ${adminBtn}
     </header>`;
 
   const base = new Date();
@@ -136,7 +139,7 @@ function renderCalendario() {
     }
   }
 
-  root.innerHTML = `${header}${monthNav}${calHTML}${detalheHTML}${legendaWrap}<div style="height:8px"></div>`;
+  root.innerHTML = `${header}${monthNav}${calHTML}${detalheHTML}${legendaWrap}<div class="page-bottom-spacer"></div>`;
 }
 
 function mudarMesCalendario(delta) {

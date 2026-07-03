@@ -242,10 +242,10 @@ const Store = {
     return escalas;
   },
 
-  // Garante que os próximos N meses de culto fixo já têm escala gerada
-  async garantirRodizioProximosMeses(meses = 6) {
+  // Garante que os próximos N dias de culto fixo já têm escala gerada
+  async garantirRodizioProximasSemanas(semanas = 6) {
     const hoje = new Date();
-    const fim = addDays(hoje, meses * 30);
+    const fim = addDays(hoje, semanas * 7);
     const datas = gerarDatasCultoFixo(isoDate(hoje), isoDate(fim));
     for (const dataISO of datas) {
       if (!this.cultos[dataISO] || !this.cultos[dataISO].geradoPorRodizio) {

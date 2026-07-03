@@ -40,17 +40,8 @@ function doLogout() {
 }
 
 function atualizarUIAdmin() {
-  const trigger = document.getElementById('login-trigger');
-  const navAdmin = document.getElementById('nav-admin');
-  if (Auth.isAdmin) {
-    trigger.classList.add('logged');
-    trigger.innerHTML = '<i class="ti ti-shield-check"></i>';
-    navAdmin.classList.remove('hidden');
-  } else {
-    trigger.classList.remove('logged');
-    trigger.innerHTML = '<i class="ti ti-shield-lock"></i>';
-    navAdmin.classList.add('hidden');
-  }
+  // atualiza todos os botões de admin no header (re-renderiza a tela atual)
+  renderTelaAtual();
 }
 
 // ════════════════════════════════════════════════════════════

@@ -46,7 +46,7 @@ const Notificacoes = {
 
       // IMPORTANTE: troque pela sua VAPID key (gerada no Console Firebase
       // em Configurações do projeto > Cloud Messaging > Web Push certificates)
-      const VAPID_KEY = 'SUA_VAPID_KEY_AQUI';
+      const VAPID_KEY = 'ULwUDyyx_b9cz4p9i2sKt11yJaExNckttbSQgCdN1mo';
 
       const token = await this.messaging.getToken({ vapidKey: VAPID_KEY });
       if (token) {

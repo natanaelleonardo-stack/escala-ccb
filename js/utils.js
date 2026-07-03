@@ -96,8 +96,12 @@ function nomeExibicao(porteiro) {
 
 let toastTimer;
 function toast(msg) {
-  const el = document.getElementById('toast');
-  if (!el) return;
+  let el = document.getElementById('toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'toast';
+    document.body.appendChild(el);
+  }
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(toastTimer);
