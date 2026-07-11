@@ -623,14 +623,20 @@ main {
   background: var(--azul); color: #fff; padding: 10px 20px; border-radius: 30px;
   font-size: 13px; font-weight: 500; z-index: 500; transition: transform .3s ease;
   pointer-events: none; white-space: nowrap; max-width: 90vw; overflow: hidden; text-overflow: ellipsis;
+  opacity: 0;
 }
-#toast.show { transform: translateX(-50%) translateY(0); }
+#toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-/* ── ONESIGNAL — esconde botão automático ── */
+/* ── ONESIGNAL — esconde todos os elementos automáticos ── */
 #onesignal-bell-container,
 #onesignal-popover-container,
+#onesignal-slidedown-container,
 .onesignal-bell-launcher,
-.onesignal-bell-launcher-button { display: none !important; }
+.onesignal-bell-launcher-button,
+.onesignal-slidedown-dialog,
+.onesignal-popover-dialog,
+div[id^="onesignal"],
+div[class^="onesignal"] { display: none !important; }
 .admin-header-btn {
   background: none; border: none; padding: 4px 6px;
   color: var(--azul); font-size: 20px; cursor: pointer; flex-shrink: 0;

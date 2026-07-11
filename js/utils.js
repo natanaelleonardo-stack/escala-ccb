@@ -20,8 +20,16 @@ function corParaPorteiro(index) {
   return PALETA_CORES[index % PALETA_CORES.length];
 }
 
+// Fuso horário de Brasília (America/Sao_Paulo)
+const TIMEZONE = 'America/Sao_Paulo';
+
 function isoDate(d) {
-  return d.toISOString().split('T')[0];
+  // Usa o fuso de Brasília para evitar virada de dia incorreta
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: TIMEZONE,
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  }).format(d);
+  return parts; // retorna no formato YYYY-MM-DD
 }
 
 function todayISO() {
@@ -103,9 +111,14 @@ function toast(msg) {
     document.body.appendChild(el);
   }
   el.textContent = msg;
+  el.classList.remove('show');
+  // força reflow para reiniciar a animação
+  void el.offsetWidth;
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+  toastTimer = setTimeout(() => {
+    el.classList.remove('show');
+  }, 2800);
 }
 
 // Verifica se um porteiro está disponível em um dado dia da semana
