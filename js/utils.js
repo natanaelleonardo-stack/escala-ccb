@@ -20,16 +20,8 @@ function corParaPorteiro(index) {
   return PALETA_CORES[index % PALETA_CORES.length];
 }
 
-// Fuso horário de Brasília (America/Sao_Paulo)
-const TIMEZONE = 'America/Sao_Paulo';
-
 function isoDate(d) {
-  // Usa o fuso de Brasília para evitar virada de dia incorreta
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: TIMEZONE,
-    year: 'numeric', month: '2-digit', day: '2-digit'
-  }).format(d);
-  return parts; // retorna no formato YYYY-MM-DD
+  return d.toISOString().split('T')[0];
 }
 
 function todayISO() {

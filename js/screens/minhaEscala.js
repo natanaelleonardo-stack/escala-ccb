@@ -21,7 +21,7 @@ function renderMinhaEscala() {
       ${adminBtn}
     </header>`;
 
-  root.innerHTML = `${header}<div id="minha-escala-body"></div>`;
+  root.innerHTML = `${header}<div id="minha-escala-body"></div><div class="page-bottom-spacer"></div>`;
 
   const meuId = localStorage.getItem(LS_KEY_MEU_PORTEIRO_ID);
   const meuPorteiro = meuId ? Store.getPorteiro(meuId) : null;
@@ -104,6 +104,16 @@ function renderCorpoIdentificado(porteiro) {
 
   body.innerHTML = `${trocaLinkHTML}<div id="minha-escala-resultado"></div>`;
   renderResultadoMinhaEscala(porteiro);
+
+  // solicita token FCM se ainda não tiver — mesmo para porteiros já identificados
+  if (typeof Notificacoes !== 'undefined' && Notificacoes.suportado) {
+    const porteiroAtual = Store.getPorteiro(porteiro.id);
+    if (!porteiroAtual?.fcmToken) {
+      setTimeout(() => {
+        Notificacoes.solicitarPermissaoEToken(porteiro.id);
+      }, 1500);
+    }
+  }
 }
 
 function renderResultadoMinhaEscala(porteiro) {

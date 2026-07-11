@@ -1,20 +1,6 @@
 // ════════════════════════════════════════════════════════════
 // NOTIFICAÇÕES PUSH — Firebase Cloud Messaging (FCM)
 // ════════════════════════════════════════════════════════════
-//
-// Como funciona:
-// 1. Quando o porteiro se identifica em "Minha Escala", pedimos
-//    permissão de notificação e geramos um "token" único do celular.
-// 2. Esse token é salvo em /porteiros/{id}.fcmToken no Firestore.
-// 3. Uma Cloud Function (rodando todo dia de manhã) verifica quem
-//    está escalado para o culto do dia e envia a notificação push
-//    para o token daquele porteiro.
-//
-// IMPORTANTE: a parte "todo dia de manhã, verificar e enviar" não
-// roda no navegador — precisa de uma Cloud Function agendada no
-// Firebase (plano Blaze). O código dela está documentado no final
-// deste arquivo, em comentário, pronto para deploy.
-// ════════════════════════════════════════════════════════════
 
 const Notificacoes = {
   messaging: null,
@@ -22,40 +8,57 @@ const Notificacoes = {
 
   init() {
     try {
-      if (!('Notification' in window) || !firebase.messaging) {
+      if (!('Notification' in window)) {
+        console.log('[FCM] Notificações não suportadas neste navegador.');
+        this.suportado = false;
+        return;
+      }
+      if (typeof firebase === 'undefined' || !firebase.messaging) {
+        console.log('[FCM] Firebase Messaging não disponível.');
         this.suportado = false;
         return;
       }
       this.messaging = firebase.messaging();
       this.suportado = true;
+      console.log('[FCM] Inicializado com sucesso. Permissão atual:', Notification.permission);
     } catch (e) {
-      console.warn('Notificações push não disponíveis neste navegador.', e);
+      console.warn('[FCM] Erro ao inicializar:', e);
       this.suportado = false;
     }
   },
 
   async solicitarPermissaoEToken(porteiroId) {
-    if (!this.suportado) return null;
+    if (!this.suportado) {
+      console.log('[FCM] Não suportado, abortando.');
+      return null;
+    }
 
     try {
+      console.log('[FCM] Solicitando permissão...');
       const permissao = await Notification.requestPermission();
+      console.log('[FCM] Permissão:', permissao);
+
       if (permissao !== 'granted') {
-        console.log('Permissão de notificação negada pelo usuário.');
+        console.log('[FCM] Permissão negada.');
         return null;
       }
 
-      // IMPORTANTE: troque pela sua VAPID key (gerada no Console Firebase
-      // em Configurações do projeto > Cloud Messaging > Web Push certificates)
       const VAPID_KEY = 'ULwUDyyx_b9cz4p9i2sKt11yJaExNckttbSQgCdN1mo';
 
+      console.log('[FCM] Obtendo token...');
       const token = await this.messaging.getToken({ vapidKey: VAPID_KEY });
+
       if (token) {
+        console.log('[FCM] Token obtido:', token.slice(0, 20) + '...');
         await db.collection('porteiros').doc(porteiroId).update({ fcmToken: token });
-        console.log('Token de notificação registrado para', porteiroId);
+        console.log('[FCM] Token salvo no Firestore para porteiro:', porteiroId);
+        toast('Notificações ativadas ✓');
+      } else {
+        console.warn('[FCM] Token vazio retornado.');
       }
       return token;
     } catch (e) {
-      console.warn('Erro ao obter token de notificação:', e);
+      console.warn('[FCM] Erro ao obter token:', e);
       return null;
     }
   }
