@@ -3,7 +3,7 @@
 // Os dados (Firestore) NÃO são cacheados aqui — precisam de internet.
 // ════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'escala-porteiros-v5';
+const CACHE_NAME = 'escala-porteiros-v6';
 
 const ARQUIVOS_CACHE = [
   './',
