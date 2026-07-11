@@ -80,7 +80,8 @@ async function testarToken() {
     }
 
     log('Obtendo token FCM...');
-    const token = await messaging.getToken({ vapidKey: VAPID_KEY });
+    const registration = await navigator.serviceWorker.register('/escala-ccb/firebase-messaging-sw.js');
+    const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
 
     if (!token) {
       log('Token vazio! Verifique o Service Worker.', true);

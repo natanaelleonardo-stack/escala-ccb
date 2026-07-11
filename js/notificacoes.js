@@ -46,7 +46,8 @@ const Notificacoes = {
       const VAPID_KEY = 'ULwUDyyx_b9cz4p9i2sKt11yJaExNckttbSQgCdN1mo';
 
       console.log('[FCM] Obtendo token...');
-      const token = await this.messaging.getToken({ vapidKey: VAPID_KEY });
+      const registration = await navigator.serviceWorker.register('/escala-ccb/firebase-messaging-sw.js');
+      const token = await this.messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
 
       if (token) {
         console.log('[FCM] Token obtido:', token.slice(0, 20) + '...');
