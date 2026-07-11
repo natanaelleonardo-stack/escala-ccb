@@ -76,7 +76,7 @@ function confirmarIdentidade(porteiroId) {
   if (!p) return;
   localStorage.setItem(LS_KEY_MEU_PORTEIRO_ID, porteiroId);
   _minhaEscalaSelecionado = p;
-  toast(`Olá, ${nomeExibicao(p)}! 👋`);
+  toast(`A paz de Deus, ${nomeExibicao(p)}! 👋`);
   renderCorpoIdentificado(p);
 
   // pede permissão de notificação push (silenciosamente, se suportado)
