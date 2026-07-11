@@ -626,7 +626,11 @@ main {
 }
 #toast.show { transform: translateX(-50%) translateY(0); }
 
-/* ── BOTÃO ADMIN NO HEADER ── */
+/* ── ONESIGNAL — esconde botão automático ── */
+#onesignal-bell-container,
+#onesignal-popover-container,
+.onesignal-bell-launcher,
+.onesignal-bell-launcher-button { display: none !important; }
 .admin-header-btn {
   background: none; border: none; padding: 4px 6px;
   color: var(--azul); font-size: 20px; cursor: pointer; flex-shrink: 0;
