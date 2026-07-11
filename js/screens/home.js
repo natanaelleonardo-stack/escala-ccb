@@ -181,10 +181,6 @@ function renderCultoCard(dataISO) {
           <div class="culto-dia">${DIAS_SEMANA_FULL[dow]}</div>
           <div class="culto-data">${formatDiaMesAno(dataISO)}</div>
         </div>
-        <div class="culto-badge ${gerado ? '' : 'manual'}">
-          <i class="ti ti-${gerado ? 'refresh' : 'hand-stop'}"></i>
-          ${gerado ? 'Rodízio' : 'Manual'}
-        </div>
       </div>
       <div class="culto-card-body">
         <div class="culto-info-row"><i class="ti ti-clock"></i><span>${culto?.horario || '19:30'}</span></div>

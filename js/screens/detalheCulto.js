@@ -15,7 +15,6 @@ function renderDetalheCulto(dataISO) {
       <div class="detalhe-title">${DIAS_SEMANA_FULL[dow]} · ${formatDiaMes(dataISO)}</div>
       <div class="detalhe-meta">
         ${culto?.titulo || 'Culto oficial'} · ${culto?.horario || '19:30'}
-        ${culto?.geradoPorRodizio ? '<span class="auto-tag">Rodízio automático</span>' : ''}
       </div>
     </header>`;
 
@@ -33,15 +32,15 @@ function renderDetalheCulto(dataISO) {
           const p = Store.getPorteiro(pid);
           if (!p) return '';
           const temTelefone = p.telefone && p.telefone.trim();
-          const whatsHTML = temTelefone ? `
-            <a class="whats-link-row" href="${linkWhatsApp(p.telefone)}" target="_blank">
-              <i class="ti ti-brand-whatsapp"></i>
-            </a>` : '';
           return `
             <div class="porteiro-row">
               <div class="porteiro-avatar" style="background:${p.cor || '#ddd'};color:#fff">${initials(p.nome)}</div>
               <span class="porteiro-name">${p.nome}${p.codinome ? ` (${p.codinome})` : ''}</span>
-              ${whatsHTML}
+              ${temTelefone ? `<span class="telefone-texto">${formatarTelefone(p.telefone)}</span>` : ''}
+              ${temTelefone ? `
+                <a class="whats-link-icon" href="${linkWhatsApp(p.telefone)}" target="_blank">
+                  <i class="ti ti-brand-whatsapp"></i>
+                </a>` : ''}
             </div>`;
         }).join('');
       }
@@ -56,7 +55,7 @@ function renderDetalheCulto(dataISO) {
     }).join('');
   }
 
-  root.innerHTML = `${header}<div style="padding-top:12px">${blocosHTML}</div><div style="height:12px"></div>`;
+  root.innerHTML = `${header}<div style="padding-top:12px">${blocosHTML}</div><div class="page-bottom-spacer"></div>`;
 }
 
 function irParaDetalhe(dataISO) {
