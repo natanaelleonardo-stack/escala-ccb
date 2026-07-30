@@ -90,6 +90,17 @@ function abrirFormPorteiro(porteiroId) {
   overlay.id = 'porteiro-form-overlay';
 
   const disponibilidade = p?.disponibilidade || 'todos';
+  const posicoesMarcadas = p?.posicoes || [];
+  const posicoesAtivas = Store.getPosicoesAtivas();
+
+  const checkboxesPosicoes = posicoesAtivas.length > 0
+    ? posicoesAtivas.map(pos => `
+        <label class="pos-check-item">
+          <input type="checkbox" class="pf-posicao-check" value="${pos.id}"
+            ${posicoesMarcadas.includes(pos.id) ? 'checked' : ''}>
+          <span>${pos.nome}</span>
+        </label>`).join('')
+    : `<div class="field-hint" style="color:#c0392b">Nenhuma posição cadastrada. Cadastre posições primeiro.</div>`;
 
   overlay.innerHTML = `
     <div class="modal" style="max-width:380px">
@@ -106,6 +117,12 @@ function abrirFormPorteiro(porteiroId) {
       <div class="field-group">
         <label class="field-label">Telefone (opcional)</label>
         <input type="text" id="pf-telefone" class="field-input" placeholder="(15) 99999-9999" value="${p?.telefone || ''}">
+      </div>
+      <hr class="divider">
+      <div class="field-group">
+        <label class="field-label">Posições que atua</label>
+        <div class="field-hint" style="margin-bottom:8px">Define em qual posição este porteiro será escalado.</div>
+        <div class="pos-check-list">${checkboxesPosicoes}</div>
       </div>
       <hr class="divider">
       <div class="field-group">
@@ -173,14 +190,15 @@ async function salvarPorteiro() {
   const telefone = document.getElementById('pf-telefone').value.trim();
   const disponibilidade = document.getElementById('pf-disponibilidade').value;
   const cor = document.getElementById('pf-cor').value;
+  const posicoes = [...document.querySelectorAll('.pf-posicao-check:checked')].map(el => el.value);
 
   if (!nome) { toast('Informe o nome completo'); return; }
 
   if (_editandoPorteiroId) {
-    await Store.updatePorteiro(_editandoPorteiroId, { nome, codinome, telefone, disponibilidade, cor });
+    await Store.updatePorteiro(_editandoPorteiroId, { nome, codinome, telefone, disponibilidade, cor, posicoes });
     toast('Porteiro atualizado ✓');
   } else {
-    await Store.addPorteiro({ nome, codinome, telefone, disponibilidade, cor });
+    await Store.addPorteiro({ nome, codinome, telefone, disponibilidade, cor, posicoes });
     toast('Porteiro cadastrado ✓');
   }
   fecharFormPorteiro();
