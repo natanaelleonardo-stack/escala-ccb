@@ -97,6 +97,122 @@ const Store = {
     await db.collection('porteiros').doc(id).delete();
     const fila = this.filaRodizio.filter(pid => pid !== id);
     await db.collection('config').doc('filaRodizio').set({ ordem: fila }, { merge: true });
+
+    // regera todos os cultos futuros sem este porteiro
+    await this.regerarEscalaFutura();
+  },
+
+  // Regera a escala de todos os cultos futuros do zero,
+  // respeitando a sequência da fila atual (sem os excluídos)
+  async regerarEscalaFutura() {
+    const hoje = todayISO();
+    const posicoes = this.getPosicoesAtivas();
+
+    // pega todos os cultos futuros gerados por rodízio, ordenados por data
+    const cultosFuturos = Object.values(this.cultos)
+      .filter(c => c.data >= hoje && c.geradoPorRodizio)
+      .sort((a, b) => a.data.localeCompare(b.data));
+
+    if (cultosFuturos.length === 0) return;
+
+    // reconstrói a fila a partir do estado atual (sem porteiros excluídos)
+    let fila = [...this.filaRodizio].filter(id => this.getPorteiro(id));
+
+    for (const culto of cultosFuturos) {
+      const dow = culto.diaSemana;
+      const escalas = {};
+      const usados = new Set();
+
+      for (const posicao of posicoes) {
+        let escolhidoIdx = -1;
+        for (let i = 0; i < fila.length; i++) {
+          const pid = fila[i];
+          if (usados.has(pid)) continue;
+          const porteiro = this.getPorteiro(pid);
+          if (!porteiro || porteiro.ativo === false) continue;
+          if (!porteiroDisponivelEm(porteiro, dow)) continue;
+          escolhidoIdx = i;
+          break;
+        }
+        if (escolhidoIdx === -1) {
+          escalas[posicao.id] = [];
+          continue;
+        }
+        const escolhidoId = fila[escolhidoIdx];
+        escalas[posicao.id] = [escolhidoId];
+        usados.add(escolhidoId);
+        fila.splice(escolhidoIdx, 1);
+        fila.push(escolhidoId);
+      }
+
+      await db.collection('cultos').doc(culto.data).set({ escalas }, { merge: true });
+    }
+
+    // salva a nova fila após regerar tudo
+    await db.collection('config').doc('filaRodizio').set({ ordem: fila }, { merge: true });
+
+    // registra alteração para o popup de aviso
+    await this.registrarAlteracao({
+      porteiroId: null,
+      porteiroNome: 'Escala',
+      tipo: 'trocou',
+      cultoData: cultosFuturos[0]?.data || hoje,
+      posicaoNome: 'Sequência atualizada'
+    });
+  },
+
+  // Preenche posições em branco em cultos futuros já existentes
+  async preencherBrancosFuturos() {
+    const hoje = todayISO();
+    const posicoes = this.getPosicoesAtivas();
+
+    const cultosComBrancos = Object.values(this.cultos)
+      .filter(c => {
+        if (c.data < hoje || !c.geradoPorRodizio) return false;
+        return posicoes.some(pos => !(c.escalas?.[pos.id]?.length));
+      })
+      .sort((a, b) => a.data.localeCompare(b.data));
+
+    if (cultosComBrancos.length === 0) return;
+
+    let fila = [...this.filaRodizio].filter(id => this.getPorteiro(id));
+
+    for (const culto of cultosComBrancos) {
+      const dow = culto.diaSemana;
+      const escalas = { ...culto.escalas };
+      let alterou = false;
+
+      for (const posicao of posicoes) {
+        if (escalas[posicao.id]?.length) continue; // já tem porteiro, pula
+
+        let escolhidoIdx = -1;
+        const jaEscalados = new Set(Object.values(escalas).flat());
+
+        for (let i = 0; i < fila.length; i++) {
+          const pid = fila[i];
+          if (jaEscalados.has(pid)) continue;
+          const porteiro = this.getPorteiro(pid);
+          if (!porteiro || porteiro.ativo === false) continue;
+          if (!porteiroDisponivelEm(porteiro, dow)) continue;
+          escolhidoIdx = i;
+          break;
+        }
+
+        if (escolhidoIdx === -1) continue;
+
+        const escolhidoId = fila[escolhidoIdx];
+        escalas[posicao.id] = [escolhidoId];
+        fila.splice(escolhidoIdx, 1);
+        fila.push(escolhidoId);
+        alterou = true;
+      }
+
+      if (alterou) {
+        await db.collection('cultos').doc(culto.data).set({ escalas }, { merge: true });
+      }
+    }
+
+    await db.collection('config').doc('filaRodizio').set({ ordem: fila }, { merge: true });
   },
 
   async reordenarFila(novaOrdem) {
@@ -242,16 +358,19 @@ const Store = {
     return escalas;
   },
 
-  // Garante que os próximos N dias de culto fixo já têm escala gerada
-  async garantirRodizioProximasSemanas(semanas = 6) {
+  // Garante que os próximos N meses de culto fixo já têm escala gerada
+  // e preenche posições em branco em cultos já existentes
+  async garantirRodizioProximosMeses(meses = 6) {
     const hoje = new Date();
-    const fim = addDays(hoje, semanas * 7);
+    const fim = addDays(hoje, meses * 30);
     const datas = gerarDatasCultoFixo(isoDate(hoje), isoDate(fim));
     for (const dataISO of datas) {
       if (!this.cultos[dataISO] || !this.cultos[dataISO].geradoPorRodizio) {
         await this.gerarRodizioParaData(dataISO);
       }
     }
+    // preenche posições em branco em cultos já existentes
+    await this.preencherBrancosFuturos();
   },
 
   // Troca manual: remove um porteiro de uma posição num culto, coloca outro
