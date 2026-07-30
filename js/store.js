@@ -131,6 +131,8 @@ const Store = {
           const porteiro = this.getPorteiro(pid);
           if (!porteiro || porteiro.ativo === false) continue;
           if (!porteiroDisponivelEm(porteiro, dow)) continue;
+          const posicoesDoporteiro = porteiro.posicoes || [];
+          if (posicoesDoporteiro.length > 0 && !posicoesDoporteiro.includes(posicao.id)) continue;
           escolhidoIdx = i;
           break;
         }
@@ -194,6 +196,8 @@ const Store = {
           const porteiro = this.getPorteiro(pid);
           if (!porteiro || porteiro.ativo === false) continue;
           if (!porteiroDisponivelEm(porteiro, dow)) continue;
+          const posicoesDoporteiro = porteiro.posicoes || [];
+          if (posicoesDoporteiro.length > 0 && !posicoesDoporteiro.includes(posicao.id)) continue;
           escolhidoIdx = i;
           break;
         }
@@ -317,18 +321,17 @@ const Store = {
 
   async gerarRodizioParaData(dataISO) {
     const dow = diaSemanaDe(dataISO);
-    if (!DIAS_CULTO_FIXO.includes(dow)) return; // só gera p/ terça/sexta
+    if (!DIAS_CULTO_FIXO.includes(dow)) return;
 
     await this.garantirCultoFixo(dataISO);
     const posicoes = this.getPosicoesAtivas();
     if (posicoes.length === 0) return;
 
-    let fila = [...this.filaRodizio].filter(id => this.getPorteiro(id)); // remove ids órfãos
+    let fila = [...this.filaRodizio].filter(id => this.getPorteiro(id));
     const escalas = {};
     const usados = new Set();
 
     for (const posicao of posicoes) {
-      // procura o próximo da fila disponível para este dia e ainda não usado neste culto
       let escolhidoIdx = -1;
       for (let i = 0; i < fila.length; i++) {
         const pid = fila[i];
@@ -336,17 +339,19 @@ const Store = {
         const porteiro = this.getPorteiro(pid);
         if (!porteiro || porteiro.ativo === false) continue;
         if (!porteiroDisponivelEm(porteiro, dow)) continue;
+        // verifica se o porteiro é elegível para esta posição específica
+        const posicoesDoporteiro = porteiro.posicoes || [];
+        if (posicoesDoporteiro.length > 0 && !posicoesDoporteiro.includes(posicao.id)) continue;
         escolhidoIdx = i;
         break;
       }
       if (escolhidoIdx === -1) {
-        escalas[posicao.id] = []; // ninguém disponível
+        escalas[posicao.id] = [];
         continue;
       }
       const escolhidoId = fila[escolhidoIdx];
       escalas[posicao.id] = [escolhidoId];
       usados.add(escolhidoId);
-      // move o escolhido para o fim da fila
       fila.splice(escolhidoIdx, 1);
       fila.push(escolhidoId);
     }
