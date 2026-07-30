@@ -1,268 +1,216 @@
 // ════════════════════════════════════════════════════════════
-// TELA: ADMIN — POSIÇÕES (Porta Principal, Lateral, Estacionamento...)
+// TELA: ADMIN — PORTEIROS (cadastro + fila do rodízio)
 // ════════════════════════════════════════════════════════════
- 
-function renderAdminPosicoes() {
+
+let _editandoPorteiroId = null;
+
+function renderAdminPorteiros() {
   const root = document.getElementById('app-root');
   if (!Auth.isAdmin) { irPara('home'); return; }
- 
+
   const header = `
     <header class="app-header">
       <img src="assets/brasao-ccb.png" class="app-header-logo" alt="CCB">
       <div class="app-header-texts">
-        <div class="app-header-title">Posições</div>
-        <div class="app-header-sub">Locais de atuação dos porteiros</div>
+        <div class="app-header-title">Porteiros</div>
+        <div class="app-header-sub">Ordem da fila do rodízio</div>
       </div>
-      <button class="app-header-action" onclick="irPara('home')"><i class="ti ti-x"></i></button>
+      <button class="app-header-action" onclick="abrirFormPorteiro()"><i class="ti ti-plus"></i></button>
     </header>
     <div class="admin-bar"><i class="ti ti-shield"></i><span>Modo administrador ativo</span></div>`;
- 
-  const listaHTML = Store.getPosicoesAtivas().map(pos => `
-    <div class="item-card" draggable="true" data-id="${pos.id}" ondragstart="onDragStartPosicao(event)" ondragover="onDragOverPosicao(event)" ondrop="onDropPosicao(event)">
-      <i class="ti ti-grip-vertical drag-handle"></i>
-      <div style="width:30px;height:30px;border-radius:7px;background:#eef2f7;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <i class="ti ${pos.icone || 'ti-door'}" style="color:#0d3a6e;font-size:15px"></i>
-      </div>
-      <div class="item-card-info">
-        <div class="item-card-name">${pos.nome}</div>
-      </div>
-      <div class="item-actions">
-        <div class="icon-btn" onclick='abrirFormPosicao("${pos.id}")'><i class="ti ti-pencil"></i></div>
-        <div class="icon-btn danger" onclick='confirmarRemoverPosicao("${pos.id}")'><i class="ti ti-trash"></i></div>
-      </div>
-    </div>`).join('');
- 
+
+  const fila = Store.filaRodizio.filter(id => Store.getPorteiro(id));
+  const semFila = Store.porteiros.filter(p => !fila.includes(p.id));
+  const todosNaOrdem = [...fila, ...semFila.map(p => p.id)];
+
+  const listaHTML = todosNaOrdem.map((id, idx) => {
+    const p = Store.getPorteiro(id);
+    if (!p) return '';
+    const dispLabel = { todos: 'Todos os cultos', terca: 'Dia fixo: terça', sexta: 'Dia fixo: sexta' }[p.disponibilidade] || '';
+    return `
+      <div class="item-card" draggable="true" data-id="${p.id}" ondragstart="onDragStartPorteiro(event)" ondragover="onDragOverPorteiro(event)" ondrop="onDropPorteiro(event)">
+        <i class="ti ti-grip-vertical drag-handle"></i>
+        <div class="fila-pos-badge">${idx + 1}º</div>
+        <div class="porteiro-avatar">${initials(p.nome)}</div>
+        <div class="item-card-info">
+          <div class="item-card-name">${p.nome}${p.codinome ? ` <span style="color:#999;font-weight:400">(${p.codinome})</span>` : ''}</div>
+          <div class="item-card-meta">${dispLabel}</div>
+        </div>
+        <div class="item-actions">
+          <div class="icon-btn" onclick='abrirFormPorteiro("${p.id}")'><i class="ti ti-pencil"></i></div>
+          <div class="icon-btn danger" onclick='confirmarRemoverPorteiro("${p.id}")'><i class="ti ti-trash"></i></div>
+        </div>
+      </div>`;
+  }).join('');
+
   root.innerHTML = `
     ${header}
     <div class="form-body">
-      <div class="field-group">
-        <label class="field-label">Nova posição</label>
-        <input type="text" id="nova-posicao-nome" class="field-input" placeholder="Ex: Porta dos Fundos" style="margin-bottom:8px">
-        <button class="btn btn-primary btn-block" onclick="adicionarPosicaoRapida()"><i class="ti ti-plus"></i> Adicionar posição</button>
-      </div>
-      <hr class="divider">
-      <label class="field-label">Posições cadastradas</label>
-      <div class="lista-cards mt-12">
-        ${Store.getPosicoesAtivas().length === 0 ? `<div class="estado-vazio"><i class="ti ti-door"></i><p>Nenhuma posição cadastrada ainda.</p></div>` : listaHTML}
-      </div>
-      <div class="info-box mt-12"><i class="ti ti-info-circle"></i><span>Excluir uma posição não remove o histórico de escalas passadas, apenas impede seu uso em novos rodízios.</span></div>
+      ${Store.porteiros.length === 0 ? `<div class="estado-vazio"><i class="ti ti-users"></i><p>Nenhum porteiro cadastrado ainda.<br>Toque em + para adicionar.</p></div>` : `
+        <div class="lista-cards">${listaHTML}</div>
+        <div class="warn-box mt-12"><i class="ti ti-info-circle"></i><span>Arraste para reordenar a fila manualmente, se necessário.</span></div>
+      `}
     </div>
   `;
 }
- 
-async function adicionarPosicaoRapida() {
-  const input = document.getElementById('nova-posicao-nome');
-  const nome = input.value.trim();
-  if (!nome) { toast('Digite o nome da posição'); return; }
-  await Store.addPosicao(nome);
-  toast('Posição adicionada ✓');
-  input.value = '';
-  renderAdminPosicoes();
+
+// ── DRAG AND DROP simples para reordenar a fila ──
+let _dragId = null;
+function onDragStartPorteiro(e) {
+  _dragId = e.currentTarget.dataset.id;
+  e.dataTransfer.effectAllowed = 'move';
 }
- 
-function abrirFormPosicao(id) {
-  const pos = Store.posicoes.find(p => p.id === id);
-  const novoNome = prompt('Renomear posição:', pos?.nome || '');
-  if (novoNome === null) return;
-  const nomeTrim = novoNome.trim();
-  if (!nomeTrim) return;
-  Store.updatePosicao(id, { nome: nomeTrim }).then(() => {
-    toast('Posição atualizada ✓');
-    renderAdminPosicoes();
-  });
+function onDragOverPorteiro(e) {
+  e.preventDefault();
 }
- 
-function confirmarRemoverPosicao(id) {
-  const pos = Store.posicoes.find(p => p.id === id);
-  if (!pos) return;
- 
-  // verifica se está em uso nos próximos cultos
-  const emUso = Object.values(Store.cultos).some(c =>
-    c.data >= todayISO() && (c.escalas?.[id] || []).length > 0
-  );
- 
-  const msg = emUso
-    ? `"${pos.nome}" está sendo usada na escala atual. Ela será removida dos próximos rodízios, mas o histórico será mantido. Excluir mesmo assim?`
-    : `Excluir a posição "${pos.nome}"?`;
- 
-  if (!confirm(msg)) return;
- 
-  Store.removePosicao(id).then(() => {
-    toast('Posição removida');
-    renderAdminPosicoes();
-  });
-}
- 
-// ── DRAG AND DROP para reordenar posições ──
-let _dragPosId = null;
-function onDragStartPosicao(e) { _dragPosId = e.currentTarget.dataset.id; e.dataTransfer.effectAllowed = 'move'; }
-function onDragOverPosicao(e) { e.preventDefault(); }
-async function onDropPosicao(e) {
+async function onDropPorteiro(e) {
   e.preventDefault();
   const targetId = e.currentTarget.dataset.id;
-  if (!_dragPosId || _dragPosId === targetId) return;
- 
-  let lista = Store.getPosicoesAtivas().map(p => p.id);
-  const fromIdx = lista.indexOf(_dragPosId);
-  const toIdx = lista.indexOf(targetId);
+  if (!_dragId || _dragId === targetId) return;
+
+  let fila = Store.filaRodizio.filter(id => Store.getPorteiro(id));
+  const fromIdx = fila.indexOf(_dragId);
+  const toIdx = fila.indexOf(targetId);
   if (fromIdx === -1 || toIdx === -1) return;
- 
-  lista.splice(fromIdx, 1);
-  lista.splice(toIdx, 0, _dragPosId);
-  await Store.reordenarPosicoes(lista);
-  toast('Ordem atualizada ✓');
-  _dragPosId = null;
+
+  fila.splice(fromIdx, 1);
+  fila.splice(toIdx, 0, _dragId);
+  await Store.reordenarFila(fila);
+  toast('Ordem da fila atualizada ✓');
+  _dragId = null;
 }
- 
-// ════════════════════════════════════════════════════════════
-// TELA: ADMIN — MENU PRINCIPAL (hub)
-// ════════════════════════════════════════════════════════════
- 
-function renderAdminMenu() {
-  const root = document.getElementById('app-root');
-  if (!Auth.isAdmin) { irPara('home'); return; }
- 
-  const header = `
-    <header class="app-header">
-      <img src="assets/brasao-ccb.png" class="app-header-logo" alt="CCB">
-      <div class="app-header-texts">
-        <div class="app-header-title">Painel Admin</div>
-        <div class="app-header-sub">${Store.config.localidade || 'Bairro dos Castanhos'}</div>
-      </div>
-    </header>
-    <div class="admin-bar"><i class="ti ti-shield"></i><span>Modo administrador ativo</span></div>`;
- 
-  const itens = [
-    { icone: 'ti-users', titulo: 'Porteiros', sub: 'Cadastro e fila do rodízio', acao: "irPara('admin-porteiros')" },
-    { icone: 'ti-door', titulo: 'Posições', sub: 'Porta Principal, Lateral, Estacionamento...', acao: "irPara('admin-posicoes')" },
-    { icone: 'ti-calendar-plus', titulo: 'Eventos especiais', sub: 'Cadastrar reuniões e eventos esporádicos', acao: "abrirFormEvento()" },
-    { icone: 'ti-settings', titulo: 'Configurações', sub: 'Nome, senha, dados gerais', acao: "irPara('admin-config')" },
-  ];
- 
-  const itensHTML = itens.map(it => `
-    <div class="item-card" onclick="${it.acao}" style="cursor:pointer">
-      <div style="width:36px;height:36px;border-radius:8px;background:#eef2f7;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <i class="ti ${it.icone}" style="color:#0d3a6e;font-size:17px"></i>
-      </div>
-      <div class="item-card-info">
-        <div class="item-card-name">${it.titulo}</div>
-        <div class="item-card-meta">${it.sub}</div>
-      </div>
-      <i class="ti ti-chevron-right" style="color:#bbb"></i>
-    </div>`).join('');
- 
-  root.innerHTML = `
-    ${header}
-    <div class="form-body">
-      <div class="lista-cards">${itensHTML}</div>
-      <hr class="divider">
-      <button class="btn btn-primary btn-block" onclick="confirmarRegerarEscala()">
-        <i class="ti ti-refresh"></i> Regerar escala futura
-      </button>
-      <div class="info-box mt-12"><i class="ti ti-info-circle"></i><span>Use este botão após excluir porteiros ou quando houver cultos sem escala. A sequência será recalculada a partir de hoje.</span></div>
-      <button class="btn btn-danger btn-block mt-12" onclick="doLogout()">Sair do modo admin</button>
-    </div>
-  `;
-}
- 
-async function confirmarRegerarEscala() {
-  if (!confirm('Regerar toda a escala futura?\n\nIsso recalcula a sequência de todos os cultos futuros com base na fila atual de porteiros. Ação recomendada após excluir porteiros ou quando houver cultos em branco.')) return;
-  toast('Regerando escala...');
-  await Store.regerarEscalaFutura();
-  toast('Escala regerada com sucesso ✓');
-  irPara('home');
-}
- 
-// ── FORM DE EVENTO ESPECIAL ──
-function abrirFormEvento() {
+
+// ── FORMULÁRIO DE CADASTRO / EDIÇÃO ──
+function abrirFormPorteiro(porteiroId) {
+  _editandoPorteiroId = porteiroId || null;
+  const p = porteiroId ? Store.getPorteiro(porteiroId) : null;
+
   const overlay = document.createElement('div');
   overlay.className = 'modal-bg open';
-  overlay.id = 'evento-form-overlay';
+  overlay.id = 'porteiro-form-overlay';
+
+  const disponibilidade = p?.disponibilidade || 'todos';
+  const posicoesMarcadas = p?.posicoes || [];
+  const posicoesAtivas = Store.getPosicoesAtivas();
+
+  const checkboxesPosicoes = posicoesAtivas.length > 0
+    ? posicoesAtivas.map(pos => `
+        <label class="pos-check-item">
+          <input type="checkbox" class="pf-posicao-check" value="${pos.id}"
+            ${posicoesMarcadas.includes(pos.id) ? 'checked' : ''}>
+          <span>${pos.nome}</span>
+        </label>`).join('')
+    : `<div class="field-hint" style="color:#c0392b">Nenhuma posição cadastrada. Cadastre posições primeiro.</div>`;
+
   overlay.innerHTML = `
-    <div class="modal">
-      <div class="modal-title">Novo evento especial</div>
+    <div class="modal" style="max-width:380px">
+      <div class="modal-title">${p ? 'Editar Porteiro' : 'Cadastrar Porteiro'}</div>
       <div class="field-group">
-        <label class="field-label">Título</label>
-        <input type="text" id="ev-titulo" class="field-input" placeholder="Ex: Reunião de jovens">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Data</label>
-        <input type="date" id="ev-data" class="field-input">
+        <label class="field-label">Nome completo</label>
+        <input type="text" id="pf-nome" class="field-input" placeholder="Ex: Benedito Antunes" value="${p?.nome || ''}">
       </div>
       <div class="field-group">
-        <label class="field-label">Horário</label>
-        <input type="time" id="ev-horario" class="field-input" value="19:30">
+        <label class="field-label">Codinome (opcional)</label>
+        <input type="text" id="pf-codinome" class="field-input" placeholder="Ex: Dito" value="${p?.codinome || ''}">
+        <div class="field-hint">Usado nas exibições do app. Se vazio, usa o primeiro nome.</div>
       </div>
-      <button class="btn btn-primary btn-block" onclick="salvarEvento()">Salvar evento</button>
-      <button class="btn btn-secondary btn-block" style="margin-top:8px" onclick="fecharFormEvento()">Cancelar</button>
-    </div>`;
-  document.body.appendChild(overlay);
-}
- 
-function fecharFormEvento() {
-  const el = document.getElementById('evento-form-overlay');
-  if (el) el.remove();
-}
- 
-async function salvarEvento() {
-  const titulo = document.getElementById('ev-titulo').value.trim();
-  const dataISO = document.getElementById('ev-data').value;
-  const horario = document.getElementById('ev-horario').value;
-  if (!titulo || !dataISO) { toast('Preencha título e data'); return; }
- 
-  await Store.addEventoEspecial({ dataISO, titulo, horario });
-  toast('Evento cadastrado ✓');
-  fecharFormEvento();
-  irPara('detalhe', { dataISO });
-}
- 
-// ════════════════════════════════════════════════════════════
-// TELA: ADMIN — CONFIGURAÇÕES
-// ════════════════════════════════════════════════════════════
- 
-function renderAdminConfig() {
-  const root = document.getElementById('app-root');
-  if (!Auth.isAdmin) { irPara('home'); return; }
- 
-  const header = `
-    <header class="app-header">
-      <img src="assets/brasao-ccb.png" class="app-header-logo" alt="CCB">
-      <div class="app-header-texts">
-        <div class="app-header-title">Configurações</div>
-        <div class="app-header-sub">Dados gerais do app</div>
-      </div>
-      <button class="app-header-action" onclick="irPara('admin')"><i class="ti ti-x"></i></button>
-    </header>
-    <div class="admin-bar"><i class="ti ti-shield"></i><span>Modo administrador ativo</span></div>`;
- 
-  root.innerHTML = `
-    ${header}
-    <div class="form-body">
       <div class="field-group">
-        <label class="field-label">Localidade</label>
-        <input type="text" id="cfg-localidade" class="field-input" value="${Store.config.localidade || ''}">
+        <label class="field-label">Telefone (opcional)</label>
+        <input type="text" id="pf-telefone" class="field-input" placeholder="(15) 99999-9999" value="${p?.telefone || ''}">
       </div>
-      <button class="btn btn-primary btn-block" onclick="salvarConfigGeral()">Salvar</button>
       <hr class="divider">
       <div class="field-group">
-        <label class="field-label">Alterar senha admin</label>
-        <input type="password" id="cfg-nova-senha" class="field-input" placeholder="Nova senha">
+        <label class="field-label">Posições que atua</label>
+        <div class="field-hint" style="margin-bottom:8px">Define em qual posição este porteiro será escalado.</div>
+        <div class="pos-check-list">${checkboxesPosicoes}</div>
       </div>
-      <button class="btn btn-secondary btn-block" onclick="salvarNovaSenha()">Salvar senha</button>
-    </div>
-  `;
+      <hr class="divider">
+      <div class="field-group">
+        <label class="field-label">Disponibilidade</label>
+        <div class="disp-options">
+          <div class="disp-opt ${disponibilidade==='todos'?'selected':''}" onclick="selecionarDisponibilidade('todos')" id="disp-todos">
+            <div class="radio-fake ${disponibilidade==='todos'?'on':''}"></div>
+            <div><div class="disp-opt-title">Todos os cultos</div><div class="disp-opt-sub">Pode ser escalado em terças, sextas e eventos</div></div>
+          </div>
+          <div class="disp-opt ${disponibilidade==='terca'?'selected':''}" onclick="selecionarDisponibilidade('terca')" id="disp-terca">
+            <div class="radio-fake ${disponibilidade==='terca'?'on':''}"></div>
+            <div><div class="disp-opt-title">Dia fixo: Terça</div><div class="disp-opt-sub">Disponível apenas às terças-feiras</div></div>
+          </div>
+          <div class="disp-opt ${disponibilidade==='sexta'?'selected':''}" onclick="selecionarDisponibilidade('sexta')" id="disp-sexta">
+            <div class="radio-fake ${disponibilidade==='sexta'?'on':''}"></div>
+            <div><div class="disp-opt-title">Dia fixo: Sexta</div><div class="disp-opt-sub">Disponível apenas às sextas-feiras</div></div>
+          </div>
+        </div>
+      </div>
+      <hr class="divider">
+      <div class="field-group">
+        <label class="field-label">Cor de identificação</label>
+        <div class="cor-picker" id="cor-picker">
+          ${PALETA_CORES.map(cor => `
+            <div class="cor-swatch ${ (p?.cor || PALETA_CORES[0]) === cor ? 'selected' : ''}"
+                 style="background:${cor}" onclick="selecionarCorPorteiro('${cor}')" data-cor="${cor}"></div>
+          `).join('')}
+        </div>
+        <div class="field-hint">Usada para identificar o porteiro no Calendário.</div>
+      </div>
+      <input type="hidden" id="pf-cor" value="${p?.cor || PALETA_CORES[Store.porteiros.length % PALETA_CORES.length]}">
+      <input type="hidden" id="pf-disponibilidade" value="${disponibilidade}">
+      <button class="btn btn-primary btn-block" onclick="salvarPorteiro()">Salvar porteiro</button>
+      <button class="btn btn-secondary btn-block" style="margin-top:8px" onclick="fecharFormPorteiro()">Cancelar</button>
+    </div>`;
+
+  document.body.appendChild(overlay);
 }
- 
-async function salvarConfigGeral() {
-  const localidade = document.getElementById('cfg-localidade').value.trim();
-  await db.collection('config').doc('geral').set({ localidade }, { merge: true });
-  toast('Configurações salvas ✓');
+
+function selecionarDisponibilidade(valor) {
+  document.getElementById('pf-disponibilidade').value = valor;
+  ['todos', 'terca', 'sexta'].forEach(v => {
+    const opt = document.getElementById(`disp-${v}`);
+    opt.classList.toggle('selected', v === valor);
+    opt.querySelector('.radio-fake').classList.toggle('on', v === valor);
+  });
 }
- 
-async function salvarNovaSenha() {
-  const senha = document.getElementById('cfg-nova-senha').value.trim();
-  if (senha.length < 4) { toast('Senha muito curta (mín. 4 caracteres)'); return; }
-  await Auth.changePassword(senha);
-  toast('Senha alterada ✓');
-  document.getElementById('cfg-nova-senha').value = '';
+
+function selecionarCorPorteiro(cor) {
+  document.getElementById('pf-cor').value = cor;
+  document.querySelectorAll('#cor-picker .cor-swatch').forEach(el => {
+    el.classList.toggle('selected', el.dataset.cor === cor);
+  });
+}
+
+function fecharFormPorteiro() {
+  const el = document.getElementById('porteiro-form-overlay');
+  if (el) el.remove();
+  _editandoPorteiroId = null;
+}
+
+async function salvarPorteiro() {
+  const nome = document.getElementById('pf-nome').value.trim();
+  const codinome = document.getElementById('pf-codinome').value.trim();
+  const telefone = document.getElementById('pf-telefone').value.trim();
+  const disponibilidade = document.getElementById('pf-disponibilidade').value;
+  const cor = document.getElementById('pf-cor').value;
+  const posicoes = [...document.querySelectorAll('.pf-posicao-check:checked')].map(el => el.value);
+
+  if (!nome) { toast('Informe o nome completo'); return; }
+
+  if (_editandoPorteiroId) {
+    await Store.updatePorteiro(_editandoPorteiroId, { nome, codinome, telefone, disponibilidade, cor, posicoes });
+    toast('Porteiro atualizado ✓');
+  } else {
+    await Store.addPorteiro({ nome, codinome, telefone, disponibilidade, cor, posicoes });
+    toast('Porteiro cadastrado ✓');
+  }
+  fecharFormPorteiro();
+  renderAdminPorteiros();
+}
+
+function confirmarRemoverPorteiro(id) {
+  const p = Store.getPorteiro(id);
+  if (!p) return;
+  if (!confirm(`Remover ${p.nome} da equipe de porteiros?`)) return;
+  Store.removePorteiro(id).then(() => {
+    toast('Porteiro removido');
+    renderAdminPorteiros();
+  });
 }
